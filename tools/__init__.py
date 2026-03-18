@@ -17,6 +17,8 @@ def register_all_tools(mcp: FastMCP) -> None:
     from tools.metafields import register as register_metafields
     from tools.store import register as register_store
     from tools.analytics import register as register_analytics
+    from tools.computed import register as register_computed
+    from tools.audit import register as register_audit
     from tools.bulk_ops import register as register_bulk_ops
 
     register_products(mcp)
@@ -29,4 +31,6 @@ def register_all_tools(mcp: FastMCP) -> None:
     register_metafields(mcp)
     register_store(mcp)
     register_analytics(mcp)
+    register_computed(mcp)
+    register_audit(mcp)
     register_bulk_ops(mcp)
