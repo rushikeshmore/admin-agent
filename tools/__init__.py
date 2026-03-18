@@ -14,6 +14,8 @@ def register_all_tools(mcp: FastMCP) -> None:
     from tools.fulfillment import register as register_fulfillment
     from tools.discounts import register as register_discounts
     from tools.content import register as register_content
+    from tools.metafields import register as register_metafields
+    from tools.store import register as register_store
     from tools.analytics import register as register_analytics
     from tools.bulk_ops import register as register_bulk_ops
 
@@ -24,5 +26,7 @@ def register_all_tools(mcp: FastMCP) -> None:
     register_fulfillment(mcp)
     register_discounts(mcp)
     register_content(mcp)
+    register_metafields(mcp)
+    register_store(mcp)
     register_analytics(mcp)
     register_bulk_ops(mcp)
