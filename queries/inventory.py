@@ -1,6 +1,4 @@
-"""
-GraphQL query and mutation strings for Inventory & Locations.
-"""
+"""GraphQL query and mutation strings for Inventory & Locations."""
 
 QUERY_INVENTORY_LEVELS = """
 query GetInventoryLevels($inventoryItemId: ID!) {

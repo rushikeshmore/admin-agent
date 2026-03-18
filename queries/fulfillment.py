@@ -1,6 +1,4 @@
-"""
-GraphQL query and mutation strings for Fulfillment, Shipping, and Returns.
-"""
+"""GraphQL query and mutation strings for Fulfillment, Shipping, and Returns."""
 
 QUERY_FULFILLMENT_ORDERS = """
 query GetFulfillmentOrders($orderId: ID!) {

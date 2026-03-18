@@ -1,5 +1,4 @@
-"""
-Discount MCP tools (8 tools).
+"""Discount MCP tools (8 tools).
 
 Discounts: get, list, create code, create automatic, activate, deactivate, delete
 """
@@ -28,7 +27,6 @@ from safety import SafetyTier, register_safety
 
 def register(mcp: FastMCP) -> None:
     """Register discount tools."""
-
     from server import _check_user_errors, _error, _flatten_edges, _get_client
 
     register_safety("get_discount", SafetyTier.READ)
@@ -281,7 +279,11 @@ def register(mcp: FastMCP) -> None:
             client = _get_client(ctx)
             resource = "DiscountAutomaticNode" if is_automatic else "DiscountCodeNode"
             gid = client.normalize_gid(resource, discount_id)
-            mutation = MUTATION_DISCOUNT_AUTOMATIC_ACTIVATE if is_automatic else MUTATION_DISCOUNT_CODE_ACTIVATE
+            mutation = (
+                MUTATION_DISCOUNT_AUTOMATIC_ACTIVATE
+                if is_automatic
+                else MUTATION_DISCOUNT_CODE_ACTIVATE
+            )
             op_key = "discountAutomaticActivate" if is_automatic else "discountCodeActivate"
 
             data = await client.graphql(mutation, {"id": gid})
@@ -294,7 +296,9 @@ def register(mcp: FastMCP) -> None:
             return _error(str(e))
 
     @mcp.tool()
-    async def deactivate_discount(discount_id: str, ctx: Context, is_automatic: bool = False) -> str:
+    async def deactivate_discount(
+        discount_id: str, ctx: Context, is_automatic: bool = False
+    ) -> str:
         """Deactivate a discount (make it unusable without deleting).
 
         Args:
@@ -307,7 +311,11 @@ def register(mcp: FastMCP) -> None:
             client = _get_client(ctx)
             resource = "DiscountAutomaticNode" if is_automatic else "DiscountCodeNode"
             gid = client.normalize_gid(resource, discount_id)
-            mutation = MUTATION_DISCOUNT_AUTOMATIC_DEACTIVATE if is_automatic else MUTATION_DISCOUNT_CODE_DEACTIVATE
+            mutation = (
+                MUTATION_DISCOUNT_AUTOMATIC_DEACTIVATE
+                if is_automatic
+                else MUTATION_DISCOUNT_CODE_DEACTIVATE
+            )
             op_key = "discountAutomaticDeactivate" if is_automatic else "discountCodeDeactivate"
 
             data = await client.graphql(mutation, {"id": gid})
@@ -335,7 +343,9 @@ def register(mcp: FastMCP) -> None:
             client = _get_client(ctx)
             resource = "DiscountAutomaticNode" if is_automatic else "DiscountCodeNode"
             gid = client.normalize_gid(resource, discount_id)
-            mutation = MUTATION_DISCOUNT_AUTOMATIC_DELETE if is_automatic else MUTATION_DISCOUNT_DELETE
+            mutation = (
+                MUTATION_DISCOUNT_AUTOMATIC_DELETE if is_automatic else MUTATION_DISCOUNT_DELETE
+            )
             op_key = "discountAutomaticDelete" if is_automatic else "discountCodeDelete"
 
             data = await client.graphql(mutation, {"id": gid})

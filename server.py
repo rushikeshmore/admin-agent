@@ -1,5 +1,4 @@
-"""
-AdminAgent — Shopify Admin MCP Server.
+"""AdminAgent — Shopify Admin MCP Server.
 
 Sprint 1: 21 tools (17 product/collection + 1 ShopifyQL + 3 bulk ops).
 Full store management via Claude + MCP.
@@ -10,10 +9,10 @@ Run via Claude Code:
 
 from __future__ import annotations
 
-import json
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+import json
 
 from mcp.server.fastmcp import Context, FastMCP
 

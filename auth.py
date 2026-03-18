@@ -1,5 +1,4 @@
-"""
-Token manager for Shopify Admin API authentication.
+"""Token manager for Shopify Admin API authentication.
 
 Supports two modes:
 - Legacy custom app tokens (shpat_*): static, never expire
@@ -12,8 +11,8 @@ import asyncio
 import os
 import time
 
-import httpx
 from dotenv import load_dotenv
+import httpx
 
 
 class AuthError(Exception):
@@ -30,6 +29,7 @@ class TokenManager:
         client_id: str = "",
         client_secret: str = "",
     ):
+        """Initialize with store domain and auth credentials."""
         self.store = store
         self._access_token = access_token
         self._client_id = client_id

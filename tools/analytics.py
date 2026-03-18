@@ -1,5 +1,4 @@
-"""
-ShopifyQL analytics MCP tools (15 tools).
+"""ShopifyQL analytics MCP tools (15 tools).
 
 14 convenience wrappers for common analytics queries + 1 raw ShopifyQL executor.
 Requires `read_reports` scope.
@@ -31,13 +30,16 @@ def _format_shopifyql_result(data: dict) -> str:
         td = result.get("tableData", {})
         columns = td.get("columns", [])
         rows = td.get("rowData", [])
-        return json.dumps({
-            "type": "table",
-            "columns": [c.get("name", "") for c in columns],
-            "columnTypes": [c.get("dataType", "") for c in columns],
-            "rows": rows,
-            "rowCount": len(rows),
-        }, indent=2)
+        return json.dumps(
+            {
+                "type": "table",
+                "columns": [c.get("name", "") for c in columns],
+                "columnTypes": [c.get("dataType", "") for c in columns],
+                "rows": rows,
+                "rowCount": len(rows),
+            },
+            indent=2,
+        )
     if typename == "PolarisVizResponse":
         return json.dumps({"type": "chart", "data": result.get("data", [])}, indent=2)
     return json.dumps({"type": typename, "raw": result}, indent=2)
@@ -45,15 +47,24 @@ def _format_shopifyql_result(data: dict) -> str:
 
 def register(mcp: FastMCP) -> None:
     """Register all analytics tools."""
-
     from server import _error, _get_client
 
     for name in [
-        "run_shopifyql", "revenue_dashboard", "revenue_by_product",
-        "revenue_by_channel", "revenue_by_geography", "revenue_by_discount",
-        "customer_acquisition", "conversion_funnel", "product_sales_detail",
-        "time_analysis", "yoy_comparison", "custom_date_comparison",
-        "channel_attribution", "shipping_analysis", "sales_trend",
+        "run_shopifyql",
+        "revenue_dashboard",
+        "revenue_by_product",
+        "revenue_by_channel",
+        "revenue_by_geography",
+        "revenue_by_discount",
+        "customer_acquisition",
+        "conversion_funnel",
+        "product_sales_detail",
+        "time_analysis",
+        "yoy_comparison",
+        "custom_date_comparison",
+        "channel_attribution",
+        "shipping_analysis",
+        "sales_trend",
     ]:
         register_safety(name, SafetyTier.READ)
 
@@ -141,7 +152,9 @@ def register(mcp: FastMCP) -> None:
             return _error(str(e))
 
     @mcp.tool()
-    async def revenue_by_geography(ctx: Context, period: str = "-30d", group_by: str = "billing_country") -> str:
+    async def revenue_by_geography(
+        ctx: Context, period: str = "-30d", group_by: str = "billing_country"
+    ) -> str:
         """Revenue breakdown by geography.
 
         Args:

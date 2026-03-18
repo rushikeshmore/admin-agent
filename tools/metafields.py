@@ -1,5 +1,4 @@
-"""
-Metafield & Metaobject MCP tools (8 tools).
+"""Metafield & Metaobject MCP tools (8 tools).
 
 Metafields: get (on any resource), set, delete, list definitions
 Metaobjects: get, list, create, update, delete
@@ -17,7 +16,6 @@ from queries.metafields import (
     MUTATION_METAFIELDS_SET,
     MUTATION_METAOBJECT_CREATE,
     MUTATION_METAOBJECT_DELETE,
-    MUTATION_METAOBJECT_UPDATE,
     QUERY_METAFIELD_DEFINITIONS,
     QUERY_METAFIELDS,
     QUERY_METAOBJECT,
@@ -28,7 +26,6 @@ from safety import SafetyTier, register_safety
 
 def register(mcp: FastMCP) -> None:
     """Register metafield and metaobject tools."""
-
     from server import _check_user_errors, _error, _flatten_edges, _get_client
 
     register_safety("get_metafields", SafetyTier.READ)
@@ -122,7 +119,10 @@ def register(mcp: FastMCP) -> None:
             if err:
                 return _error(err)
             return json.dumps(
-                {"deleted": True, "deletedId": data.get("metafieldDelete", {}).get("deletedId", "")},
+                {
+                    "deleted": True,
+                    "deletedId": data.get("metafieldDelete", {}).get("deletedId", ""),
+                },
                 indent=2,
             )
         except ShopifyAdminError as e:
@@ -268,7 +268,10 @@ def register(mcp: FastMCP) -> None:
             if err:
                 return _error(err)
             return json.dumps(
-                {"deleted": True, "deletedId": data.get("metaobjectDelete", {}).get("deletedId", "")},
+                {
+                    "deleted": True,
+                    "deletedId": data.get("metaobjectDelete", {}).get("deletedId", ""),
+                },
                 indent=2,
             )
         except ShopifyAdminError as e:

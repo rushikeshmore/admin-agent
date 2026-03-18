@@ -1,6 +1,4 @@
-"""
-GraphQL query and mutation strings for Content (Pages, Blogs, Articles, Redirects).
-"""
+"""GraphQL query and mutation strings for Content (Pages, Blogs, Articles, Redirects)."""
 
 # ─── Pages ────────────────────────────────────────────────────────────────────
 

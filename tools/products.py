@@ -1,5 +1,4 @@
-"""
-Product & Collection MCP tools (17 tools).
+"""Product & Collection MCP tools (17 tools).
 
 Products: get, list, create, update, delete, set (upsert), duplicate
 Variants: create, update, delete, manage options
@@ -36,7 +35,6 @@ from safety import SafetyTier, register_safety
 
 def register(mcp: FastMCP) -> None:
     """Register all product and collection tools."""
-
     # Import server helpers inside register to avoid circular imports
     from server import _check_user_errors, _error, _flatten_edges, _get_client
 
@@ -735,17 +733,13 @@ def register(mcp: FastMCP) -> None:
         try:
             client = _get_client(ctx)
             gid = client.normalize_gid("Collection", collection_id)
-            data = await client.graphql(
-                MUTATION_COLLECTION_DELETE, {"input": {"id": gid}}
-            )
+            data = await client.graphql(MUTATION_COLLECTION_DELETE, {"input": {"id": gid}})
             err = _check_user_errors(data, "collectionDelete")
             if err:
                 return _error(err)
 
             deleted_id = data.get("collectionDelete", {}).get("deletedCollectionId", "")
-            return json.dumps(
-                {"deleted": True, "deletedCollectionId": deleted_id}, indent=2
-            )
+            return json.dumps({"deleted": True, "deletedCollectionId": deleted_id}, indent=2)
         except ShopifyAdminError as e:
             return _error(str(e))
 

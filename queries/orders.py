@@ -1,6 +1,4 @@
-"""
-GraphQL query and mutation strings for Orders, Draft Orders, and Abandoned Checkouts.
-"""
+"""GraphQL query and mutation strings for Orders, Draft Orders, and Abandoned Checkouts."""
 
 # ─── Order Queries ────────────────────────────────────────────────────────────
 

@@ -1,5 +1,4 @@
-"""
-Bulk operations manager for Shopify Admin API.
+"""Bulk operations manager for Shopify Admin API.
 
 Submit async queries, poll for completion, download and parse JSONL results.
 """
@@ -66,6 +65,7 @@ class BulkOperationManager:
     """Manages Shopify Admin bulk operations (async query execution)."""
 
     def __init__(self, client: ShopifyAdminClient):
+        """Initialize with a ShopifyAdminClient instance."""
         self._client = client
 
     async def submit(self, query: str) -> dict:

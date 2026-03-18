@@ -1,0 +1,42 @@
+# AdminAgent — Ruff configuration
+# Enforces Google Python Style Guide conventions.
+# `ruff check .` and `ruff format .` must pass with zero issues.
+
+target-version = "py312"
+line-length = 100  # Deviation from Google's 80 — our MCP tools have long docstrings
+
+[lint]
+select = [
+    "F",     # Pyflakes (unused imports, undefined names)
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "I",     # isort (import sorting)
+    "N",     # pep8-naming
+    "UP",    # pyupgrade (modernize syntax)
+    "B",     # flake8-bugbear (common pitfalls)
+    "SIM",   # flake8-simplify
+    "RUF",   # Ruff-specific rules
+    "D",     # pydocstyle (docstring conventions)
+]
+ignore = [
+    "E501",   # Line too long — handled by formatter
+    "B008",   # Function call in argument defaults — FastMCP uses this
+    "D100",   # Missing docstring in public module — we have module-level docstrings where needed
+    "D104",   # Missing docstring in public package — __init__.py doesn't need one
+    "D203",   # One blank line before class docstring — conflicts with D211
+    "D213",   # Multi-line docstring summary on second line — conflicts with D212
+    "D401",   # First line should be imperative — our tool docstrings are descriptive
+    "D415",   # First line should end with period — some tool docstrings end with bracket tags
+    "D417",   # Undocumented param — tool Args: blocks are documented but not in ruff-parseable format
+]
+
+[lint.isort]
+known-first-party = ["auth", "client", "bulk", "safety", "server", "analytics_engine", "queries", "tools"]
+force-sort-within-sections = true
+
+[lint.pydocstyle]
+convention = "google"
+
+[format]
+quote-style = "double"
+indent-style = "space"

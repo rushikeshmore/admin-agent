@@ -1,5 +1,4 @@
-"""
-Safety tier system for AdminAgent MCP tools.
+"""Safety tier system for AdminAgent MCP tools.
 
 Every tool is classified by destructiveness level.
 Claude reads the safety label in tool docstrings and acts accordingly.
@@ -13,12 +12,12 @@ from enum import IntEnum
 class SafetyTier(IntEnum):
     """Safety classification for Admin API tools."""
 
-    EXCLUDED = -2      # Never built (payments, domains, checkout, tax)
-    READ_ONLY = -1     # View-only resources, no mutations
-    READ = 0           # Read operations, no confirmation needed
-    WRITE = 1          # Create/update, show preview before executing
-    DESTRUCTIVE = 2    # Delete operations, require explicit confirmation
-    BULK = 3           # Affect many resources, require count + preview + confirm
+    EXCLUDED = -2  # Never built (payments, domains, checkout, tax)
+    READ_ONLY = -1  # View-only resources, no mutations
+    READ = 0  # Read operations, no confirmation needed
+    WRITE = 1  # Create/update, show preview before executing
+    DESTRUCTIVE = 2  # Delete operations, require explicit confirmation
+    BULK = 3  # Affect many resources, require count + preview + confirm
 
 
 _LABELS = {

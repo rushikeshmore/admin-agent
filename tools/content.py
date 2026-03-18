@@ -1,5 +1,4 @@
-"""
-Content MCP tools (8 tools).
+"""Content MCP tools (8 tools).
 
 Pages: get, list, create, update, delete
 Blogs: list
@@ -31,7 +30,6 @@ from safety import SafetyTier, register_safety
 
 def register(mcp: FastMCP) -> None:
     """Register content tools."""
-
     from server import _check_user_errors, _error, _flatten_edges, _get_client
 
     register_safety("get_page", SafetyTier.READ)
@@ -189,7 +187,10 @@ def register(mcp: FastMCP) -> None:
             if err:
                 return _error(err)
             return json.dumps(
-                {"deleted": True, "deletedPageId": data.get("pageDelete", {}).get("deletedPageId", "")},
+                {
+                    "deleted": True,
+                    "deletedPageId": data.get("pageDelete", {}).get("deletedPageId", ""),
+                },
                 indent=2,
             )
         except ShopifyAdminError as e:
@@ -286,7 +287,9 @@ def register(mcp: FastMCP) -> None:
                 err = _check_user_errors(data, "urlRedirectCreate")
                 if err:
                     return _error(err)
-                return json.dumps(data.get("urlRedirectCreate", {}).get("urlRedirect", {}), indent=2)
+                return json.dumps(
+                    data.get("urlRedirectCreate", {}).get("urlRedirect", {}), indent=2
+                )
 
             elif action == "delete":
                 if not redirect_ids:

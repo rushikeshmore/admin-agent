@@ -1,6 +1,4 @@
-"""
-GraphQL query and mutation strings for Metafields & Metaobjects.
-"""
+"""GraphQL query and mutation strings for Metafields & Metaobjects."""
 
 QUERY_METAFIELDS = """
 query GetMetafields($ownerId: ID!, $first: Int!, $after: String, $namespace: String) {

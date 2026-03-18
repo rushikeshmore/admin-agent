@@ -1,6 +1,4 @@
-"""
-GraphQL query and mutation strings for Customers.
-"""
+"""GraphQL query and mutation strings for Customers."""
 
 # ─── Customer Queries ─────────────────────────────────────────────────────────
 

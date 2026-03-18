@@ -1,6 +1,4 @@
-"""
-GraphQL query and mutation strings for Discounts.
-"""
+"""GraphQL query and mutation strings for Discounts."""
 
 QUERY_DISCOUNT = """
 query GetDiscount($id: ID!) {

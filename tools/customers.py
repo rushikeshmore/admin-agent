@@ -1,5 +1,4 @@
-"""
-Customer MCP tools (10 tools).
+"""Customer MCP tools (10 tools).
 
 Customers: get, list, create, update, set (upsert), delete, merge
 Addresses: manage
@@ -30,7 +29,6 @@ from safety import SafetyTier, register_safety
 
 def register(mcp: FastMCP) -> None:
     """Register all customer tools."""
-
     from server import _check_user_errors, _error, _flatten_edges, _get_client
 
     # ── Safety registrations ──────────────────────────────────────────────

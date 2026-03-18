@@ -1,6 +1,4 @@
-"""
-GraphQL query strings for ShopifyQL analytics.
-"""
+"""GraphQL query strings for ShopifyQL analytics."""
 
 QUERY_SHOPIFYQL = """
 query RunShopifyQL($query: String!) {

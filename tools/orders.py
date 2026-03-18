@@ -1,5 +1,4 @@
-"""
-Order, Draft Order, and Abandoned Checkout MCP tools (17 tools).
+"""Order, Draft Order, and Abandoned Checkout MCP tools (17 tools).
 
 Orders: get, list, update, cancel, close, open, capture payment, create refund, mark paid
 Draft Orders: get, list, create, complete, send invoice, delete
@@ -36,7 +35,6 @@ from safety import SafetyTier, register_safety
 
 def register(mcp: FastMCP) -> None:
     """Register all order tools."""
-
     from server import _check_user_errors, _error, _flatten_edges, _get_client
 
     # ── Safety registrations ──────────────────────────────────────────────
@@ -554,7 +552,10 @@ def register(mcp: FastMCP) -> None:
             if err:
                 return _error(err)
             return json.dumps(
-                {"sent": True, "draftOrder": data.get("draftOrderInvoiceSend", {}).get("draftOrder", {})},
+                {
+                    "sent": True,
+                    "draftOrder": data.get("draftOrderInvoiceSend", {}).get("draftOrder", {}),
+                },
                 indent=2,
             )
         except ShopifyAdminError as e:
@@ -578,7 +579,13 @@ def register(mcp: FastMCP) -> None:
             err = _check_user_errors(data, "draftOrderDelete")
             if err:
                 return _error(err)
-            return json.dumps({"deleted": True, "deletedId": data.get("draftOrderDelete", {}).get("deletedId", "")}, indent=2)
+            return json.dumps(
+                {
+                    "deleted": True,
+                    "deletedId": data.get("draftOrderDelete", {}).get("deletedId", ""),
+                },
+                indent=2,
+            )
         except ShopifyAdminError as e:
             return _error(str(e))
 

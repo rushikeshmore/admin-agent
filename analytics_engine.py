@@ -1,5 +1,4 @@
-"""
-Pure computation functions for analytics.
+"""Pure computation functions for analytics.
 
 No API calls — only math. Input data, output metrics.
 Modeled on partner-agent's analytics.py pattern.
@@ -8,7 +7,7 @@ Modeled on partner-agent's analytics.py pattern.
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 
 
@@ -93,21 +92,21 @@ def compute_rfm(customers: list[dict], today: date | None = None) -> list[dict]:
         frequency = len(orders)
         monetary = _to_decimal((c.get("amountSpent") or {}).get("amount", "0"))
 
-        scored.append({
-            "customerId": c.get("id"),
-            "name": c.get("displayName", ""),
-            "email": c.get("email", ""),
-            "recency_days": recency_days,
-            "frequency": frequency,
-            "monetary": str(monetary.quantize(Decimal("0.01"))),
-        })
+        scored.append(
+            {
+                "customerId": c.get("id"),
+                "name": c.get("displayName", ""),
+                "email": c.get("email", ""),
+                "recency_days": recency_days,
+                "frequency": frequency,
+                "monetary": str(monetary.quantize(Decimal("0.01"))),
+            }
+        )
 
     return scored
 
 
-def compute_cohort_retention(
-    customers: list[dict], orders: list[dict], months: int = 6
-) -> dict:
+def compute_cohort_retention(customers: list[dict], orders: list[dict], months: int = 6) -> dict:
     """Compute cohort retention by first-order month."""
     customer_first_order: dict[str, date] = {}
     customer_orders: dict[str, list[date]] = defaultdict(list)
@@ -129,7 +128,9 @@ def compute_cohort_retention(
         cohort_key = first_date.strftime("%Y-%m")
         cohorts[cohort_key][0] += 1
         for order_date in customer_orders[cid]:
-            month_diff = (order_date.year - first_date.year) * 12 + (order_date.month - first_date.month)
+            month_diff = (order_date.year - first_date.year) * 12 + (
+                order_date.month - first_date.month
+            )
             if 0 < month_diff <= months:
                 cohorts[cohort_key][month_diff] += 1
 
@@ -139,7 +140,9 @@ def compute_cohort_retention(
         result[cohort_key] = {
             "customers": base,
             "retention": {
-                f"month_{i}": round(cohorts[cohort_key].get(i, 0) / base * 100, 1) if base > 0 else 0
+                f"month_{i}": round(cohorts[cohort_key].get(i, 0) / base * 100, 1)
+                if base > 0
+                else 0
                 for i in range(1, months + 1)
             },
         }
@@ -184,17 +187,21 @@ def compute_inventory_turnover(
         current_inventory = p.get("totalInventory", 0)
         sold = units_sold.get(pid, 0)
         daily_velocity = sold / days if days > 0 else 0
-        days_of_supply = round(current_inventory / daily_velocity, 1) if daily_velocity > 0 else float("inf")
+        days_of_supply = (
+            round(current_inventory / daily_velocity, 1) if daily_velocity > 0 else float("inf")
+        )
 
-        results.append({
-            "productId": pid,
-            "title": p.get("title", ""),
-            "currentInventory": current_inventory,
-            "unitsSold": sold,
-            "dailyVelocity": round(daily_velocity, 2),
-            "daysOfSupply": days_of_supply if days_of_supply != float("inf") else "∞",
-            "turnoverRate": round(sold / max(current_inventory, 1), 2),
-        })
+        results.append(
+            {
+                "productId": pid,
+                "title": p.get("title", ""),
+                "currentInventory": current_inventory,
+                "unitsSold": sold,
+                "dailyVelocity": round(daily_velocity, 2),
+                "daysOfSupply": days_of_supply if days_of_supply != float("inf") else "∞",
+                "turnoverRate": round(sold / max(current_inventory, 1), 2),
+            }
+        )
 
     results.sort(key=lambda x: x["unitsSold"], reverse=True)
     return results
@@ -270,7 +277,11 @@ def compute_discount_roi(orders: list[dict]) -> dict:
         "aovWithDiscount": str(aov_with.quantize(Decimal("0.01"))),
         "aovWithoutDiscount": str(aov_without.quantize(Decimal("0.01"))),
         "topCodes": [
-            {"code": code, "uses": data["count"], "revenue": str(data["revenue"].quantize(Decimal("0.01")))}
+            {
+                "code": code,
+                "uses": data["count"],
+                "revenue": str(data["revenue"].quantize(Decimal("0.01"))),
+            }
             for code, data in top_codes
         ],
     }

@@ -1,5 +1,4 @@
-"""
-Bulk operation MCP tools (3 tools).
+"""Bulk operation MCP tools (3 tools).
 
 Submit async queries, check status, cancel operations.
 """
@@ -16,7 +15,6 @@ from safety import SafetyTier, register_safety
 
 def register(mcp: FastMCP) -> None:
     """Register bulk operation tools."""
-
     from server import _error, _get_bulk
 
     register_safety("run_bulk_query", SafetyTier.BULK)

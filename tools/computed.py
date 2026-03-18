@@ -1,17 +1,18 @@
-"""
-Computed analytics MCP tools (12 tools).
+"""Computed analytics MCP tools (12 tools).
 
 These fetch raw data via API, then compute metrics using analytics_engine.py.
 """
 
 from __future__ import annotations
 
-import json
 from collections import defaultdict
+import json
 
 from mcp.server.fastmcp import Context, FastMCP
 
 from analytics_engine import (
+    _money,
+    _to_decimal,
     compute_cohort_retention,
     compute_discount_roi,
     compute_inventory_turnover,
@@ -19,33 +20,36 @@ from analytics_engine import (
     compute_repeat_rate,
     compute_rfm,
     rank_products,
-    _money,
-    _parse_date,
-    _to_decimal,
 )
 from client import ShopifyAdminError
+from queries.customers import QUERY_CUSTOMERS
 from queries.orders import QUERY_ORDERS
 from queries.products import QUERY_PRODUCTS
-from queries.customers import QUERY_CUSTOMERS
 from safety import SafetyTier, register_safety
 
 
 def register(mcp: FastMCP) -> None:
     """Register computed analytics tools."""
-
     from server import _error, _flatten_edges, _get_client
 
     for name in [
-        "product_performance_ranking", "customer_ltv", "customer_rfm_segments",
-        "repeat_purchase_rate", "inventory_turnover", "discount_roi",
-        "profit_margin_report", "basket_analysis", "return_analysis",
-        "abandoned_cart_value", "order_pattern_analysis", "cohort_retention",
+        "product_performance_ranking",
+        "customer_ltv",
+        "customer_rfm_segments",
+        "repeat_purchase_rate",
+        "inventory_turnover",
+        "discount_roi",
+        "profit_margin_report",
+        "basket_analysis",
+        "return_analysis",
+        "abandoned_cart_value",
+        "order_pattern_analysis",
+        "cohort_retention",
     ]:
         register_safety(name, SafetyTier.READ)
 
     async def _fetch_orders(client, query: str = "", limit: int = 250) -> list[dict]:
         """Fetch orders with line items for analytics."""
-        from queries.orders import QUERY_ORDER
         orders = await client.graphql_paginated(
             QUERY_ORDERS,
             {"first": min(limit, 250), "query": query, "sortKey": "CREATED_AT", "reverse": True},
@@ -58,7 +62,10 @@ def register(mcp: FastMCP) -> None:
 
     async def _fetch_products(client, limit: int = 250) -> list[dict]:
         products = await client.graphql_paginated(
-            QUERY_PRODUCTS, {"first": min(limit, 250)}, path=["products"], limit=limit,
+            QUERY_PRODUCTS,
+            {"first": min(limit, 250)},
+            path=["products"],
+            limit=limit,
         )
         for p in products:
             p["variants"] = _flatten_edges(p.get("variants", {}))
@@ -66,7 +73,10 @@ def register(mcp: FastMCP) -> None:
 
     async def _fetch_customers(client, query: str = "", limit: int = 250) -> list[dict]:
         return await client.graphql_paginated(
-            QUERY_CUSTOMERS, {"first": min(limit, 250), "query": query}, path=["customers"], limit=limit,
+            QUERY_CUSTOMERS,
+            {"first": min(limit, 250), "query": query},
+            path=["customers"],
+            limit=limit,
         )
 
     @mcp.tool()
@@ -91,7 +101,9 @@ def register(mcp: FastMCP) -> None:
             client = _get_client(ctx)
             orders = await _fetch_orders(client, query=period, limit=250)
             ranked = rank_products(orders, metric)[:limit]
-            return json.dumps({"products": ranked, "count": len(ranked), "metric": metric}, indent=2)
+            return json.dumps(
+                {"products": ranked, "count": len(ranked), "metric": metric}, indent=2
+            )
         except ShopifyAdminError as e:
             return _error(str(e))
 
@@ -112,14 +124,20 @@ def register(mcp: FastMCP) -> None:
             ltv_list = []
             for c in customers:
                 spent = _to_decimal((c.get("amountSpent") or {}).get("amount", "0"))
-                ltv_list.append({
-                    "customerId": c.get("id"),
-                    "name": c.get("displayName", ""),
-                    "email": c.get("email", ""),
-                    "totalSpent": str(spent),
-                    "orderCount": c.get("numberOfOrders", 0),
-                    "aov": str((spent / max(c.get("numberOfOrders", 1), 1)).quantize(_to_decimal("0.01"))),
-                })
+                ltv_list.append(
+                    {
+                        "customerId": c.get("id"),
+                        "name": c.get("displayName", ""),
+                        "email": c.get("email", ""),
+                        "totalSpent": str(spent),
+                        "orderCount": c.get("numberOfOrders", 0),
+                        "aov": str(
+                            (spent / max(c.get("numberOfOrders", 1), 1)).quantize(
+                                _to_decimal("0.01")
+                            )
+                        ),
+                    }
+                )
             ltv_list.sort(key=lambda x: _to_decimal(x["totalSpent"]), reverse=True)
             return json.dumps({"customers": ltv_list[:limit], "count": len(ltv_list)}, indent=2)
         except ShopifyAdminError as e:
@@ -182,12 +200,15 @@ def register(mcp: FastMCP) -> None:
             orders = await _fetch_orders(client, limit=250)
             results = compute_inventory_turnover(products, orders, days)
             dead_stock = [r for r in results if r["unitsSold"] == 0 and r["currentInventory"] > 0]
-            return json.dumps({
-                "products": results[:30],
-                "deadStock": dead_stock[:10],
-                "deadStockCount": len(dead_stock),
-                "periodDays": days,
-            }, indent=2)
+            return json.dumps(
+                {
+                    "products": results[:30],
+                    "deadStock": dead_stock[:10],
+                    "deadStockCount": len(dead_stock),
+                    "periodDays": days,
+                },
+                indent=2,
+            )
         except ShopifyAdminError as e:
             return _error(str(e))
 
@@ -212,7 +233,9 @@ def register(mcp: FastMCP) -> None:
             return _error(str(e))
 
     @mcp.tool()
-    async def profit_margin_report(ctx: Context, cogs_namespace: str = "custom", cogs_key: str = "cost_per_item") -> str:
+    async def profit_margin_report(
+        ctx: Context, cogs_namespace: str = "custom", cogs_key: str = "cost_per_item"
+    ) -> str:
         """Profit margin by product (requires COGS stored in metafields).
 
         Args:
@@ -232,21 +255,26 @@ def register(mcp: FastMCP) -> None:
                 for v in p.get("variants", []):
                     price = _to_decimal(v.get("price", "0"))
                     # COGS would come from metafields — this is a simplified version
-                    results.append({
-                        "product": p.get("title"),
-                        "variant": v.get("title"),
-                        "price": str(price),
-                        "sku": v.get("sku", ""),
-                        "cogs": "N/A (store COGS in metafield custom.cost_per_item)",
-                        "margin": "N/A",
-                    })
+                    results.append(
+                        {
+                            "product": p.get("title"),
+                            "variant": v.get("title"),
+                            "price": str(price),
+                            "sku": v.get("sku", ""),
+                            "cogs": "N/A (store COGS in metafield custom.cost_per_item)",
+                            "margin": "N/A",
+                        }
+                    )
                     missing_cogs += 1
 
-            return json.dumps({
-                "products": results[:30],
-                "note": f"COGS not found in metafields ({cogs_namespace}.{cogs_key}). Store cost data in product metafields to enable margin calculation.",
-                "missingCogs": missing_cogs,
-            }, indent=2)
+            return json.dumps(
+                {
+                    "products": results[:30],
+                    "note": f"COGS not found in metafields ({cogs_namespace}.{cogs_key}). Store cost data in product metafields to enable margin calculation.",
+                    "missingCogs": missing_cogs,
+                },
+                indent=2,
+            )
         except ShopifyAdminError as e:
             return _error(str(e))
 
@@ -274,10 +302,16 @@ def register(mcp: FastMCP) -> None:
                         pair = tuple(sorted([titles[i], titles[j]]))
                         pair_counts[pair] += 1
             top_pairs = sorted(pair_counts.items(), key=lambda x: x[1], reverse=True)[:15]
-            return json.dumps({
-                "pairs": [{"products": list(pair), "coOccurrences": count} for pair, count in top_pairs],
-                "ordersAnalyzed": len(orders),
-            }, indent=2)
+            return json.dumps(
+                {
+                    "pairs": [
+                        {"products": list(pair), "coOccurrences": count}
+                        for pair, count in top_pairs
+                    ],
+                    "ordersAnalyzed": len(orders),
+                },
+                indent=2,
+            )
         except ShopifyAdminError as e:
             return _error(str(e))
 
@@ -301,15 +335,19 @@ def register(mcp: FastMCP) -> None:
 
             total_refunded = sum(
                 _money(r.get("totalRefundedSet", {}))
-                for o in orders for r in (o.get("refunds") or [])
+                for o in orders
+                for r in (o.get("refunds") or [])
             )
 
-            return json.dumps({
-                "totalOrders": total_orders,
-                "refundedOrders": len(refunded_orders),
-                "refundRate": f"{refund_rate}%",
-                "totalRefunded": str(total_refunded),
-            }, indent=2)
+            return json.dumps(
+                {
+                    "totalOrders": total_orders,
+                    "refundedOrders": len(refunded_orders),
+                    "refundRate": f"{refund_rate}%",
+                    "totalRefunded": str(total_refunded),
+                },
+                indent=2,
+            )
         except ShopifyAdminError as e:
             return _error(str(e))
 
@@ -324,6 +362,7 @@ def register(mcp: FastMCP) -> None:
         try:
             client = _get_client(ctx)
             from queries.orders import QUERY_ABANDONED_CHECKOUTS
+
             data = await client.graphql(QUERY_ABANDONED_CHECKOUTS, {"first": 100})
             conn = data.get("abandonedCheckouts", {})
             checkouts = _flatten_edges(conn)
@@ -336,11 +375,14 @@ def register(mcp: FastMCP) -> None:
 
             top_abandoned = sorted(product_counts.items(), key=lambda x: x[1], reverse=True)[:10]
 
-            return json.dumps({
-                "abandonedCarts": len(checkouts),
-                "totalValue": str(total_value),
-                "topAbandonedProducts": [{"product": p, "count": c} for p, c in top_abandoned],
-            }, indent=2)
+            return json.dumps(
+                {
+                    "abandonedCarts": len(checkouts),
+                    "totalValue": str(total_value),
+                    "topAbandonedProducts": [{"product": p, "count": c} for p, c in top_abandoned],
+                },
+                indent=2,
+            )
         except ShopifyAdminError as e:
             return _error(str(e))
 

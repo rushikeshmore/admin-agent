@@ -1,5 +1,4 @@
-"""
-GraphQL query and mutation strings for Products & Collections.
+"""GraphQL query and mutation strings for Products & Collections.
 
 All constants named QUERY_* or MUTATION_*. Kept separate for readability.
 """

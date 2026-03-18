@@ -1,5 +1,4 @@
-"""
-Fulfillment, Shipping, and Returns MCP tools (8 tools).
+"""Fulfillment, Shipping, and Returns MCP tools (8 tools).
 
 Fulfillment: get orders, create, cancel, update tracking
 Fulfillment Orders: hold, release
@@ -21,7 +20,6 @@ from queries.fulfillment import (
     MUTATION_FULFILLMENT_UPDATE_TRACKING,
     MUTATION_RETURN_CLOSE,
     MUTATION_RETURN_CREATE,
-    QUERY_DELIVERY_PROFILES,
     QUERY_FULFILLMENT_ORDERS,
 )
 from safety import SafetyTier, register_safety
@@ -29,7 +27,6 @@ from safety import SafetyTier, register_safety
 
 def register(mcp: FastMCP) -> None:
     """Register fulfillment tools."""
-
     from server import _check_user_errors, _error, _flatten_edges, _get_client
 
     register_safety("get_fulfillment_orders", SafetyTier.READ)
@@ -113,9 +110,7 @@ def register(mcp: FastMCP) -> None:
             err = _check_user_errors(data, "fulfillmentCreateV2")
             if err:
                 return _error(err)
-            return json.dumps(
-                data.get("fulfillmentCreateV2", {}).get("fulfillment", {}), indent=2
-            )
+            return json.dumps(data.get("fulfillmentCreateV2", {}).get("fulfillment", {}), indent=2)
         except ShopifyAdminError as e:
             return _error(str(e))
 

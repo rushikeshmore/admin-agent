@@ -1,5 +1,4 @@
-"""
-Inventory & Location MCP tools (8 tools).
+"""Inventory & Location MCP tools (8 tools).
 
 Inventory: get levels, get product inventory, adjust, set, activate, deactivate
 Locations: get, list
@@ -28,7 +27,6 @@ from safety import SafetyTier, register_safety
 
 def register(mcp: FastMCP) -> None:
     """Register inventory and location tools."""
-
     from server import _check_user_errors, _error, _flatten_edges, _get_client
 
     register_safety("get_inventory_levels", SafetyTier.READ)

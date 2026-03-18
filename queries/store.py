@@ -1,6 +1,4 @@
-"""
-GraphQL query strings for Store settings, Themes, Files, and read-only resources.
-"""
+"""GraphQL query strings for Store settings, Themes, Files, and read-only resources."""
 
 QUERY_SHOP = """
 query GetShop {

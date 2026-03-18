@@ -1,6 +1,4 @@
-"""
-Store, Themes, Files, Publications, and Payments (read-only) MCP tools (10 tools).
-"""
+"""Store, Themes, Files, Publications, and Payments (read-only) MCP tools (10 tools)."""
 
 from __future__ import annotations
 
@@ -23,7 +21,6 @@ from safety import SafetyTier, register_safety
 
 def register(mcp: FastMCP) -> None:
     """Register store, theme, file, publication, and payment tools."""
-
     from server import _check_user_errors, _error, _flatten_edges, _get_client
 
     register_safety("get_shop", SafetyTier.READ)

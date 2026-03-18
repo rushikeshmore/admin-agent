@@ -1,5 +1,4 @@
-"""
-Shopify Admin GraphQL API client.
+"""Shopify Admin GraphQL API client.
 
 Cost-based rate limiting, cursor pagination, GID normalization.
 Modeled on partner-agent's ShopifyPartnerClient.
@@ -11,8 +10,8 @@ import asyncio
 import os
 import time
 
-import httpx
 from dotenv import load_dotenv
+import httpx
 
 from auth import AuthError, TokenManager, create_token_manager
 
@@ -23,6 +22,7 @@ class ShopifyAdminError(Exception):
     """Raised when a Shopify Admin API call fails."""
 
     def __init__(self, status_code: int, message: str) -> None:
+        """Initialize with HTTP status code and error message."""
         self.status_code = status_code
         super().__init__(f"Shopify Admin API {status_code}: {message}")
 
@@ -37,10 +37,9 @@ class ShopifyAdminClient:
         api_version: str = API_VERSION,
         debug: bool = False,
     ):
+        """Initialize with store domain, token manager, and optional config."""
         self.store = store
-        self.endpoint = (
-            f"https://{store}.myshopify.com/admin/api/{api_version}/graphql.json"
-        )
+        self.endpoint = f"https://{store}.myshopify.com/admin/api/{api_version}/graphql.json"
         self._token_manager = token_manager
         self._debug = debug
         self._client: httpx.AsyncClient | None = None
@@ -64,9 +63,7 @@ class ShopifyAdminClient:
         if self._client and not self._client.is_closed:
             await self._client.aclose()
 
-    async def graphql(
-        self, query: str, variables: dict | None = None
-    ) -> dict:
+    async def graphql(self, query: str, variables: dict | None = None) -> dict:
         """Execute a single GraphQL request with cost-based rate limiting.
 
         Returns the `data` dict from the response.
@@ -86,14 +83,12 @@ class ShopifyAdminClient:
         # Exponential backoff on 429
         for attempt in range(4):
             try:
-                resp = await client.post(
-                    self.endpoint, json=body, headers=headers
-                )
+                resp = await client.post(self.endpoint, json=body, headers=headers)
                 resp.raise_for_status()
                 break
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == 429 and attempt < 3:
-                    wait = 2 ** attempt  # 1s, 2s, 4s
+                    wait = 2**attempt  # 1s, 2s, 4s
                     await asyncio.sleep(wait)
                     # Refresh token in case it expired during wait
                     token = await self._token_manager.get_valid_token()
@@ -108,9 +103,7 @@ class ShopifyAdminClient:
 
         # GraphQL errors inside HTTP 200
         if "errors" in result:
-            messages = [
-                err.get("message", str(err)) for err in result["errors"]
-            ]
+            messages = [err.get("message", str(err)) for err in result["errors"]]
             raise ShopifyAdminError(200, "; ".join(messages))
 
         # Track cost budget from extensions
@@ -135,9 +128,7 @@ class ShopifyAdminClient:
         now = time.monotonic()
         elapsed = now - self._last_cost_update
         restored = elapsed * self._cost_restore_rate
-        self._cost_available = min(
-            self._cost_available + restored, 1000.0
-        )
+        self._cost_available = min(self._cost_available + restored, 1000.0)
         self._last_cost_update = now
 
         if self._cost_available < estimated_cost:
