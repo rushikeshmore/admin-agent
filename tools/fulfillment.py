@@ -107,10 +107,10 @@ def register(mcp: FastMCP) -> None:
             data = await client.graphql(
                 MUTATION_FULFILLMENT_CREATE, {"fulfillment": fulfillment_input}
             )
-            err = _check_user_errors(data, "fulfillmentCreateV2")
+            err = _check_user_errors(data, "fulfillmentCreate")
             if err:
                 return _error(err)
-            return json.dumps(data.get("fulfillmentCreateV2", {}).get("fulfillment", {}), indent=2)
+            return json.dumps(data.get("fulfillmentCreate", {}).get("fulfillment", {}), indent=2)
         except ShopifyAdminError as e:
             return _error(str(e))
 

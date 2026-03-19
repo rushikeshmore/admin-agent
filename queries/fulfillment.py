@@ -39,7 +39,7 @@ query GetFulfillmentOrders($orderId: ID!) {
 
 MUTATION_FULFILLMENT_CREATE = """
 mutation FulfillmentCreate($fulfillment: FulfillmentV2Input!) {
-  fulfillmentCreateV2(fulfillment: $fulfillment) {
+  fulfillmentCreate(fulfillment: $fulfillment) {
     fulfillment {
       id
       status

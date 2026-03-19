@@ -14,10 +14,83 @@ from client import ShopifyAdminError
 from queries.analytics import QUERY_SHOPIFYQL
 from safety import SafetyTier, register_safety
 
+_VALID_GROUP_BY = frozenset(
+    {
+        "day",
+        "week",
+        "month",
+        "hour",
+        "year",
+        "product_title",
+        "product_type",
+        "product_vendor",
+        "product_id",
+        "variant_title",
+        "variant_sku",
+        "billing_country",
+        "billing_city",
+        "billing_region",
+        "shipping_country",
+        "shipping_city",
+        "shipping_region",
+        "channel",
+        "referrer_source",
+        "referrer_name",
+        "discount_code",
+        "payment_method",
+        "payment_provider",
+        "fulfillment_status",
+        "customer_type",
+        "shipping_method",
+    }
+)
 
-def _run_shopifyql_query(client, query: str):
-    """Helper to execute ShopifyQL and format result."""
-    return client.graphql(QUERY_SHOPIFYQL, {"query": query})
+_VALID_METRICS = frozenset(
+    {
+        "net_sales",
+        "gross_sales",
+        "total_sales",
+        "discounts",
+        "returns",
+        "taxes",
+        "shipping",
+        "tips",
+        "gross_profit",
+        "gross_margin",
+        "orders",
+        "ordered_product_quantity",
+    }
+)
+
+_PERIOD_PATTERN_CHARS = frozenset("0123456789-dyDY")
+
+
+def _validate_period(period: str) -> str | None:
+    """Validate period is safe for ShopifyQL. Returns error message or None."""
+    p = period.strip()
+    if not p:
+        return "Period cannot be empty"
+    # Relative: -30d, -7d, -1y, -90d
+    if p.startswith("-") and all(c in _PERIOD_PATTERN_CHARS for c in p):
+        return None
+    # Absolute: YYYY-MM-DD
+    if len(p) == 10 and p[4] == "-" and p[7] == "-":
+        return None
+    return f"Invalid period format: {period!r}. Use '-30d', '-1y', or 'YYYY-MM-DD'."
+
+
+def _validate_group_by(group_by: str) -> str | None:
+    """Validate group_by is an allowed ShopifyQL dimension."""
+    if group_by.strip().lower() in _VALID_GROUP_BY:
+        return None
+    return f"Invalid group_by: {group_by!r}. Allowed: {', '.join(sorted(_VALID_GROUP_BY))}"
+
+
+def _validate_metric(metric: str) -> str | None:
+    """Validate metric is an allowed ShopifyQL metric."""
+    if metric.strip().lower() in _VALID_METRICS:
+        return None
+    return f"Invalid metric: {metric!r}. Allowed: {', '.join(sorted(_VALID_METRICS))}"
 
 
 def _format_shopifyql_result(data: dict) -> str:
@@ -164,6 +237,10 @@ def register(mcp: FastMCP) -> None:
         [SAFETY: Tier 0 — Read]
         """
         try:
+            if err := _validate_group_by(group_by):
+                return _error(err)
+            if err := _validate_period(period):
+                return _error(err)
             q = f"FROM orders SHOW sum(net_sales) AS revenue, count() AS orders GROUP BY {group_by} SINCE {period} ORDER BY revenue DESC LIMIT 30"
             return await _exec(_get_client(ctx), q)
         except ShopifyAdminError as e:
@@ -254,6 +331,12 @@ def register(mcp: FastMCP) -> None:
         [SAFETY: Tier 0 — Read]
         """
         try:
+            if err := _validate_group_by(group_by):
+                return _error(err)
+            if err := _validate_metric(metric):
+                return _error(err)
+            if err := _validate_period(period):
+                return _error(err)
             show = f"sum({metric}) AS value" if metric != "orders" else "count() AS value"
             q = f"FROM orders SHOW {show} GROUP BY {group_by} SINCE {period}"
             return await _exec(_get_client(ctx), q)
@@ -275,6 +358,10 @@ def register(mcp: FastMCP) -> None:
         [SAFETY: Tier 0 — Read]
         """
         try:
+            if err := _validate_metric(metric):
+                return _error(err)
+            if err := _validate_period(period):
+                return _error(err)
             show = f"sum({metric}) AS value" if metric != "orders" else "count() AS value"
             q = f"FROM orders SHOW {show} GROUP BY month SINCE {period} COMPARE -1y"
             return await _exec(_get_client(ctx), q)
@@ -352,6 +439,10 @@ def register(mcp: FastMCP) -> None:
         [SAFETY: Tier 0 — Read]
         """
         try:
+            if err := _validate_group_by(group_by):
+                return _error(err)
+            if err := _validate_period(period):
+                return _error(err)
             q = f"FROM orders SHOW sum(net_sales) AS revenue, count() AS orders, avg(net_sales) AS aov GROUP BY {group_by} SINCE {period}"
             return await _exec(_get_client(ctx), q)
         except ShopifyAdminError as e:

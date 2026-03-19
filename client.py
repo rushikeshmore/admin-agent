@@ -69,6 +69,9 @@ class ShopifyAdminClient:
         Returns the `data` dict from the response.
         Raises ShopifyAdminError on HTTP errors, GraphQL errors, or rate limits.
         """
+        # Pre-flight budget check to avoid unnecessary 429s
+        await self._wait_for_budget()
+
         client = await self._get_client()
         token = await self._token_manager.get_valid_token()
 
