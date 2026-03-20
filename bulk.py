@@ -116,14 +116,24 @@ class BulkOperationManager:
         Handles __parentId: child records reference their parent.
         Returns flat list of all records.
         """
-        async with httpx.AsyncClient(timeout=120.0) as http:
-            resp = await http.get(url)
-            resp.raise_for_status()
+        try:
+            async with httpx.AsyncClient(timeout=120.0) as http:
+                resp = await http.get(url)
+                resp.raise_for_status()
+        except httpx.HTTPStatusError as e:
+            raise ShopifyAdminError(e.response.status_code, f"JSONL download failed: {e}") from e
+        except httpx.RequestError as e:
+            raise ShopifyAdminError(0, f"JSONL download connection error: {e}") from e
 
         records: list[dict] = []
         for line in resp.text.strip().split("\n"):
-            if line.strip():
+            line = line.strip()
+            if not line:
+                continue
+            try:
                 records.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue  # Skip malformed JSONL lines
         return records
 
     async def run_and_wait(

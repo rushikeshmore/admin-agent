@@ -46,6 +46,7 @@ class ShopifyAdminClient:
 
         # Cost-based rate limiting state
         self._cost_available: float = 1000.0
+        self._cost_max: float = 1000.0  # Updated from throttleStatus.maximumAvailable
         self._cost_restore_rate: float = 100.0  # Standard plan default
         self._last_cost_update: float = time.monotonic()
 
@@ -100,6 +101,9 @@ class ShopifyAdminClient:
                 text = e.response.text[:300]
                 raise ShopifyAdminError(e.response.status_code, text) from e
             except httpx.RequestError as e:
+                if attempt < 3:
+                    await asyncio.sleep(2**attempt)
+                    continue
                 raise ShopifyAdminError(0, f"Connection error: {e}") from e
 
         result = resp.json()
@@ -122,6 +126,8 @@ class ShopifyAdminClient:
 
         if "currentlyAvailable" in throttle:
             self._cost_available = float(throttle["currentlyAvailable"])
+        if "maximumAvailable" in throttle:
+            self._cost_max = float(throttle["maximumAvailable"])
         if "restoreRate" in throttle:
             self._cost_restore_rate = float(throttle["restoreRate"])
         self._last_cost_update = time.monotonic()
@@ -131,7 +137,7 @@ class ShopifyAdminClient:
         now = time.monotonic()
         elapsed = now - self._last_cost_update
         restored = elapsed * self._cost_restore_rate
-        self._cost_available = min(self._cost_available + restored, 1000.0)
+        self._cost_available = min(self._cost_available + restored, self._cost_max)
         self._last_cost_update = now
 
         if self._cost_available < estimated_cost:
@@ -191,7 +197,7 @@ class ShopifyAdminClient:
         normalize_gid("Product", "123") -> "gid://shopify/Product/123"
         normalize_gid("Product", "gid://shopify/Product/123") -> unchanged
         """
-        id_str = str(id_input)
+        id_str = str(id_input).strip()
         if id_str.startswith("gid://"):
             return id_str
         return f"gid://shopify/{resource_type}/{id_str}"

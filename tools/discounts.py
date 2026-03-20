@@ -160,12 +160,12 @@ def register(mcp: FastMCP) -> None:
             if discount_type == "percentage":
                 discount_input["customerGets"] = {
                     "value": {"percentage": float(value) / 100},
-                    "items": {"allItems": True},
+                    "items": {"all": True},
                 }
             else:
                 discount_input["customerGets"] = {
                     "value": {"discountAmount": {"amount": value, "appliesOnEachItem": False}},
-                    "items": {"allItems": True},
+                    "items": {"all": True},
                 }
 
             if ends_at:
@@ -234,12 +234,12 @@ def register(mcp: FastMCP) -> None:
             if discount_type == "percentage":
                 discount_input["customerGets"] = {
                     "value": {"percentage": float(value) / 100},
-                    "items": {"allItems": True},
+                    "items": {"all": True},
                 }
             else:
                 discount_input["customerGets"] = {
                     "value": {"discountAmount": {"amount": value, "appliesOnEachItem": False}},
-                    "items": {"allItems": True},
+                    "items": {"all": True},
                 }
 
             if ends_at:

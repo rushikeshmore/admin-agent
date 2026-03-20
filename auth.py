@@ -37,6 +37,11 @@ class TokenManager:
         self._token_expiry: float = 0.0
         self._lock = asyncio.Lock()
 
+        if self.is_oauth and self._access_token:
+            # Both legacy token and OAuth credentials provided — OAuth takes precedence.
+            # Clear legacy token to avoid confusion.
+            self._access_token = ""
+
         if not self.is_oauth and not self._access_token:
             raise AuthError(
                 "No authentication configured. "

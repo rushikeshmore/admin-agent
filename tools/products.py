@@ -177,19 +177,34 @@ def register(mcp: FastMCP) -> None:
                 product_input["vendor"] = vendor
             if tags:
                 product_input["tags"] = [t.strip() for t in tags.split(",")]
-            if variants_json:
-                try:
-                    product_input["variants"] = json.loads(variants_json)
-                except json.JSONDecodeError as e:
-                    return _error(f"Invalid variants_json: {e}")
-
-            data = await client.graphql(MUTATION_PRODUCT_CREATE, {"input": product_input})
+            # Create the product first
+            data = await client.graphql(MUTATION_PRODUCT_CREATE, {"product": product_input})
             err = _check_user_errors(data, "productCreate")
             if err:
                 return _error(err)
 
             product = data.get("productCreate", {}).get("product", {})
             product["variants"] = _flatten_edges(product.get("variants", {}))
+
+            # If variants were provided, create them separately
+            if variants_json:
+                try:
+                    variants = json.loads(variants_json)
+                except json.JSONDecodeError as e:
+                    return _error(f"Product created but variants_json invalid: {e}")
+                product_gid = product.get("id", "")
+                if product_gid and variants:
+                    var_data = await client.graphql(
+                        MUTATION_VARIANTS_BULK_CREATE,
+                        {"productId": product_gid, "variants": variants},
+                    )
+                    var_err = _check_user_errors(var_data, "productVariantsBulkCreate")
+                    if var_err:
+                        return _error(f"Product created but variant creation failed: {var_err}")
+                    product["variants"] = var_data.get("productVariantsBulkCreate", {}).get(
+                        "productVariants", []
+                    )
+
             return json.dumps(product, indent=2)
         except ShopifyAdminError as e:
             return _error(str(e))
@@ -242,7 +257,7 @@ def register(mcp: FastMCP) -> None:
             if len(product_input) == 1:
                 return _error("No fields to update. Provide at least one field.")
 
-            data = await client.graphql(MUTATION_PRODUCT_UPDATE, {"input": product_input})
+            data = await client.graphql(MUTATION_PRODUCT_UPDATE, {"product": product_input})
             err = _check_user_errors(data, "productUpdate")
             if err:
                 return _error(err)
@@ -320,22 +335,36 @@ def register(mcp: FastMCP) -> None:
                 product_input["vendor"] = vendor
             if tags:
                 product_input["tags"] = [t.strip() for t in tags.split(",")]
-            if variants_json:
-                try:
-                    product_input["variants"] = json.loads(variants_json)
-                except json.JSONDecodeError as e:
-                    return _error(f"Invalid variants_json: {e}")
-
             mutation = MUTATION_PRODUCT_UPDATE if product_id else MUTATION_PRODUCT_CREATE
             op_key = "productUpdate" if product_id else "productCreate"
 
-            data = await client.graphql(mutation, {"input": product_input})
+            data = await client.graphql(mutation, {"product": product_input})
             err = _check_user_errors(data, op_key)
             if err:
                 return _error(err)
 
             product = data.get(op_key, {}).get("product", {})
             product["variants"] = _flatten_edges(product.get("variants", {}))
+
+            # Create variants separately if provided on new product
+            if variants_json and not product_id:
+                try:
+                    variants = json.loads(variants_json)
+                except json.JSONDecodeError as e:
+                    return _error(f"Product created but variants_json invalid: {e}")
+                product_gid = product.get("id", "")
+                if product_gid and variants:
+                    var_data = await client.graphql(
+                        MUTATION_VARIANTS_BULK_CREATE,
+                        {"productId": product_gid, "variants": variants},
+                    )
+                    var_err = _check_user_errors(var_data, "productVariantsBulkCreate")
+                    if var_err:
+                        return _error(f"Product created but variant creation failed: {var_err}")
+                    product["variants"] = var_data.get("productVariantsBulkCreate", {}).get(
+                        "productVariants", []
+                    )
+
             return json.dumps(product, indent=2)
         except ShopifyAdminError as e:
             return _error(str(e))
@@ -520,7 +549,7 @@ def register(mcp: FastMCP) -> None:
 
             data = await client.graphql(
                 MUTATION_PRODUCT_UPDATE,
-                {"input": {"id": gid, "options": options}},
+                {"product": {"id": gid, "options": options}},
             )
             err = _check_user_errors(data, "productUpdate")
             if err:

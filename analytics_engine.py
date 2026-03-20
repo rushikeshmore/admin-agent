@@ -44,7 +44,7 @@ def rank_products(orders: list[dict], metric: str = "revenue") -> list[dict]:
         for li in order.get("lineItems", []):
             product_id = (li.get("product") or {}).get("id", "unknown")
             title = li.get("title", "Unknown")
-            qty = li.get("quantity", 0)
+            qty = li.get("quantity") or 0
             price = _money(li.get("discountedUnitPriceSet", li.get("originalUnitPriceSet", {})))
             revenue = price * qty
 

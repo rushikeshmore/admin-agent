@@ -99,6 +99,13 @@ query ListCustomers($first: Int!, $after: String, $query: String) {
         tags
         createdAt
         updatedAt
+        orders(first: 1) {
+          edges {
+            node {
+              createdAt
+            }
+          }
+        }
       }
     }
     pageInfo {
@@ -163,8 +170,8 @@ mutation CustomerDelete($input: CustomerDeleteInput!) {
 """
 
 MUTATION_CUSTOMER_MERGE = """
-mutation CustomerMerge($customerOneId: ID!, $customerTwoId: ID!, $customerOneOverrides: CustomerMergeOverrideFields) {
-  customerMerge(customerOneId: $customerOneId, customerTwoId: $customerTwoId, customerOneOverrides: $customerOneOverrides) {
+mutation CustomerMerge($customerOneId: ID!, $customerTwoId: ID!, $overrideFields: CustomerMergeOverrideFields) {
+  customerMerge(customerOneId: $customerOneId, customerTwoId: $customerTwoId, overrideFields: $overrideFields) {
     resultingCustomerId
     userErrors {
       field

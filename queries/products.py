@@ -108,8 +108,8 @@ query ListProducts($first: Int!, $after: String, $query: String) {
 # ─── Product Mutations ────────────────────────────────────────────────────────
 
 MUTATION_PRODUCT_CREATE = """
-mutation ProductCreate($input: ProductInput!) {
-  productCreate(input: $input) {
+mutation ProductCreate($product: ProductCreateInput!) {
+  productCreate(product: $product) {
     product {
       id
       title
@@ -135,8 +135,8 @@ mutation ProductCreate($input: ProductInput!) {
 """
 
 MUTATION_PRODUCT_UPDATE = """
-mutation ProductUpdate($input: ProductInput!) {
-  productUpdate(input: $input) {
+mutation ProductUpdate($product: ProductUpdateInput!) {
+  productUpdate(product: $product) {
     product {
       id
       title
